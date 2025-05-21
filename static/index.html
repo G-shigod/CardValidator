@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Card Validator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      max-width: 400px;
+    }
+    label, button {
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    #result {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bank Card Validator</h1>
+  <form id="cardForm">
+    <label for="cardNumber">Enter card number:</label>
+    <input type="text" id="cardNumber" name="cardNumber" placeholder="" required maxlength="16"/>
+    <button type="submit">Validate</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('cardForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const cardNumber = document.getElementById('cardNumber').value.trim();
+
+      if (!cardNumber) {
+        resultDiv.textContent = 'Please enter a card number.';
+        return;
+      }
+
+      try {
+        const response = await fetch('/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ card_number: cardNumber })
+        });
+
+        if (!response.ok) {
+          resultDiv.textContent = 'Error validating card.';
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.valid) {
+          resultDiv.textContent = `✅ Valid card! Type: ${data.card_type}`;
+          resultDiv.style.color = 'green';
+        } else {
+          resultDiv.textContent = '❌ Invalid card number.';
+          resultDiv.style.color = 'red';
+        }
+      } catch (error) {
+        resultDiv.textContent = 'Error connecting to server.';
+        resultDiv.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
